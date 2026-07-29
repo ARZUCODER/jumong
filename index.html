@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jumong Seriali - Barcha qismlar</title>
+    <style>
+        /* Umumiy fon va matn stillari */
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #e50914; /* Netflix qizil rangi */
+            margin-bottom: 5px;
+        }
+
+        h3 {
+            color: #aaaaaa;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        /* Video pleer dizayni */
+        .video-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #000;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            outline: none;
+            display: block;
+        }
+
+        /* Tugmalar ro'yxati (Playlist) dizayni */
+        .playlist-container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            /* Skeyroll uchun */
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .playlist {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        /* Qismlar tugmalari */
+        .episode-btn {
+            background-color: #2b2b2b;
+            color: #fff;
+            border: 2px solid transparent;
+            padding: 12px 5px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .episode-btn:hover {
+            background-color: #3d3d3d;
+            border-color: #777;
+        }
+
+        /* Faol (hozir ko'rilayotgan) qism tugmasi */
+        .episode-btn.active {
+            background-color: #e50914;
+            color: #fff;
+            border-color: #ff0a16;
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+        }
+
+        /* Skrollbar dizayni */
+        .playlist-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .playlist-container::-webkit-scrollbar-track {
+            background: #1e1e1e; 
+        }
+        .playlist-container::-webkit-scrollbar-thumb {
+            background: #555; 
+            border-radius: 10px;
+        }
+        .playlist-container::-webkit-scrollbar-thumb:hover {
+            background: #e50914; 
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Jumong</h1>
+    <h3 id="currentTitle">1-Qism</h3>
+
+    <!-- Video Pleer -->
+    <div class="video-container">
+        <!-- controls atributi orqali Play, Pause, Fullscreen, Ovoz sozlamalari avtomatik qo'shiladi -->
+        <video id="videoPlayer" controls>
+            Sizning brauzeringiz video formatini qo'llab-quvvatlamaydi.
+        </video>
+    </div>
+
+    <!-- Qismlar tugmalari (JavaScript orqali to'ldiriladi) -->
+    <div class="playlist-container">
+        <div class="playlist" id="playlist">
+            <!-- Tugmalar shu yerga tushadi -->
+        </div>
+    </div>
+
+    <script>
+        const totalEpisodes = 81; // Jami qismlar soni
+        const videoPlayer = document.getElementById('videoPlayer');
+        const currentTitle = document.getElementById('currentTitle');
+        const playlist = document.getElementById('playlist');
+        
+        let currentIndex = 1;
+
+        // 81 ta tugmani avtomatik yaratish
+        function buildPlaylist() {
+            for (let i = 1; i <= totalEpisodes; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'episode-btn';
+                btn.id = 'btn-' + i;
+                btn.innerText = i + '-Qism';
+                
+                // Tugma bosilganda qismni almashtirish
+                btn.onclick = () => playEpisode(i);
+                
+                playlist.appendChild(btn);
+            }
+        }
+
+        // Qismni ishga tushirish funksiyasi
+        function playEpisode(index) {
+            currentIndex = index;
+            
+            // Havolani shakllantirish
+            const videoUrl = `https://c.uzbeklar.biz/film9/jumong/jumong%20${index}-qism%20hd%20%28uzmedia.tv%29.mp4`;
+            
+            // Videoni almashtirish va o'qitish
+            videoPlayer.src = videoUrl;
+            videoPlayer.play();
+            
+            // Sarlavhani o'zgartirish
+            currentTitle.innerText = index + '-Qism';
+
+            // Barcha tugmalardan "active" klassini olib tashlash
+            document.querySelectorAll('.episode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Tanlangan tugmaga "active" klassini qo'shish va unga skroll qilish
+            const activeBtn = document.getElementById('btn-' + index);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        // Bitta qism tugaganda avtomatik keyingisiga o'tish (Avtoplay)
+        videoPlayer.addEventListener('ended', () => {
+            if (currentIndex < totalEpisodes) {
+                playEpisode(currentIndex + 1);
+            }
+        });
+
+        // Dastlabki sozlamalar (Sahifa ochilganda ishlashi uchun)
+        window.onload = () => {
+            buildPlaylist();
+            // 1-qismni o'rnatamiz, lekin avtomatik o'qitmaymiz (brauzer qoidalarini buzmaslik uchun)
+            videoPlayer.src = `https://c.uzbeklar.biz/film9/jumong/jumong%201-qism%20hd%20%28uzmedia.tv%29.mp4`;
+            document.getElementById('btn-1').classList.add('active');
+        };
+    </script>
+
+</body>
+</html>
