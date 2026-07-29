@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <!-- iPhone ekranida qulay joylashishi va yaqinlashtirishni (zoom) cheklash -->
     <meta charset="UTF-8">
+    <!-- Telefonlar (iPhone/Android) uchun maxsus o'lcham va yaqinlashtirishni taqiqlash -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- YECHIM: Boshqa server (c.uzbeklar.biz) bizni bloklamasligi uchun sayt manzilini yashiramiz -->
+    <meta name="referrer" content="no-referrer">
+    
     <title>Jumong Seriali - Barcha qismlar</title>
+    
     <style>
         /* Umumiy sozlamalar */
         body {
             background-color: #121212;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Apple shriftlari */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 20px 15px;
-            /* iPhone'ning tepa qismi (notch) uchun himoya */
+            /* iPhone "cho'lka" (notch) qismi uchun himoya */
             padding-top: env(safe-area-inset-top, 20px);
             padding-bottom: env(safe-area-inset-bottom, 20px);
             text-align: center;
@@ -129,10 +134,7 @@
 
     <!-- Video Pleer -->
     <div class="video-container">
-        <!-- 
-           iPhone safari uchun maxsus parametrlar:
-           playsinline, webkit-playsinline - Video boshlanganda majburiy Fullscreenga o'tib ketmaydi, sayt ichida ko'rsatadi
-        -->
+        <!-- iPhone safari uchun playsinline webkit-playsinline -->
         <video id="videoPlayer" controls playsinline webkit-playsinline preload="metadata">
             Sizning brauzeringiz video formatini qo'llab-quvvatlamaydi.
         </video>
@@ -153,6 +155,7 @@
         
         let currentIndex = 1;
 
+        // Tugmalarni yaratish
         function buildPlaylist() {
             for (let i = 1; i <= totalEpisodes; i++) {
                 const btn = document.createElement('button');
@@ -166,18 +169,21 @@
             }
         }
 
+        // Qismni ishga tushirish
         function playEpisode(index) {
             currentIndex = index;
             
             // Videoni almashtirish
             videoPlayer.src = `https://c.uzbeklar.biz/film9/jumong/jumong%20${index}-qism%20hd%20%28uzmedia.tv%29.mp4`;
+            
+            // Videoni avtomatik o'qitish
             videoPlayer.play().catch(error => {
-                console.log("Avtoplay iPhone tomondan bloklandi. Iltimos, Play tugmasini bosing.");
+                console.log("Brauzer avtoplayni blokladi. Foydalanuvchi Play tugmasini bosishi kerak.");
             });
             
             currentTitle.innerText = index + '-Qism';
 
-            // Aktiv tugmani yangilash
+            // Aktiv tugmani topib qizilga boyash
             document.querySelectorAll('.episode-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -186,24 +192,25 @@
             if (activeBtn) {
                 activeBtn.classList.add('active');
                 
-                // Telefonlarda ro'yxatni silliq aylantirib, tanlangan tugmani ko'rsatish
+                // Ro'yxatni tanlangan tugmaga silliq skroll qilish
                 activeBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             
-            // Telefon ekranida pleerga qarab tepaga silliq skroll qilish
+            // Sahifani eng tepasiga qaytarish (telefonlarda qulay bo'lishi uchun)
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Keyingi qismga o'tish
+        // Bitta qism tugaganda avtomatik keyingisiga o'tish
         videoPlayer.addEventListener('ended', () => {
             if (currentIndex < totalEpisodes) {
                 playEpisode(currentIndex + 1);
             }
         });
 
-        // Boshlang'ich holat
+        // Boshlang'ich holatni yuklash
         window.onload = () => {
             buildPlaylist();
+            // 1-qismni birinchi bo'lib tayyorlab qoyish
             videoPlayer.src = `https://c.uzbeklar.biz/film9/jumong/jumong%201-qism%20hd%20%28uzmedia.tv%29.mp4`;
             document.getElementById('btn-1').classList.add('active');
         };
