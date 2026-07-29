@@ -1,106 +1,124 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
+    <!-- iPhone ekranida qulay joylashishi va yaqinlashtirishni (zoom) cheklash -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Jumong Seriali - Barcha qismlar</title>
     <style>
-        /* Umumiy fon va matn stillari */
+        /* Umumiy sozlamalar */
         body {
             background-color: #121212;
             color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Apple shriftlari */
             margin: 0;
-            padding: 20px;
+            padding: 20px 15px;
+            /* iPhone'ning tepa qismi (notch) uchun himoya */
+            padding-top: env(safe-area-inset-top, 20px);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
             text-align: center;
         }
 
         h1 {
-            color: #e50914; /* Netflix qizil rangi */
+            color: #e50914; 
             margin-bottom: 5px;
+            font-size: 28px;
         }
 
         h3 {
             color: #aaaaaa;
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 16px;
         }
 
-        /* Video pleer dizayni */
+        /* Video pleer */
         .video-container {
+            width: 100%;
             max-width: 900px;
             margin: 0 auto;
             background: #000;
             border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
             overflow: hidden;
+            /* Aspekt nisbatini saqlash (16:9) */
+            aspect-ratio: 16 / 9; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         video {
             width: 100%;
-            height: auto;
+            height: 100%;
             outline: none;
-            display: block;
+            object-fit: cover;
         }
 
-        /* Tugmalar ro'yxati (Playlist) dizayni */
+        /* Playlist (Qismlar) qutisi */
         .playlist-container {
             max-width: 900px;
-            margin: 30px auto;
+            margin: 20px auto;
             background: #1e1e1e;
             padding: 15px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            /* Skeyroll uchun */
             max-height: 350px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* iPhone uchun silliq skroll */
         }
 
         .playlist {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 10px;
         }
 
-        /* Qismlar tugmalari */
+        /* Telefon uchun qulay tugmalar */
         .episode-btn {
             background-color: #2b2b2b;
             color: #fff;
-            border: 2px solid transparent;
-            padding: 12px 5px;
+            border: none;
+            padding: 15px 5px; /* Barmoq bilan bosish qulay bo'lishi uchun kattalashtirildi */
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent; /* iPhone'da tugma bosilganda chiqadigan ko'k fonni olib tashlash */
         }
 
-        .episode-btn:hover {
-            background-color: #3d3d3d;
-            border-color: #777;
+        /* Bosilganda (Touch) effekt */
+        .episode-btn:active {
+            transform: scale(0.92);
+            background-color: #444;
         }
 
-        /* Faol (hozir ko'rilayotgan) qism tugmasi */
         .episode-btn.active {
             background-color: #e50914;
             color: #fff;
-            border-color: #ff0a16;
-            box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.6);
         }
 
-        /* Skrollbar dizayni */
-        .playlist-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .playlist-container::-webkit-scrollbar-track {
-            background: #1e1e1e; 
-        }
-        .playlist-container::-webkit-scrollbar-thumb {
-            background: #555; 
-            border-radius: 10px;
-        }
-        .playlist-container::-webkit-scrollbar-thumb:hover {
-            background: #e50914; 
+        /* Skrollbar (Telefonda odatda yashirin turadi, PC uchun dizayn) */
+        .playlist-container::-webkit-scrollbar { width: 6px; }
+        .playlist-container::-webkit-scrollbar-track { background: transparent; }
+        .playlist-container::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+
+        /* Kichik ekranli telefonlar uchun moslashuv */
+        @media (max-width: 480px) {
+            h1 { font-size: 24px; }
+            .playlist-container {
+                max-height: 250px; /* Ekranda video ko'rinib turishi uchun ro'yxatni kaltalashtiramiz */
+            }
+            .playlist {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 8px;
+            }
+            .episode-btn {
+                padding: 12px 2px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -111,28 +129,30 @@
 
     <!-- Video Pleer -->
     <div class="video-container">
-        <!-- controls atributi orqali Play, Pause, Fullscreen, Ovoz sozlamalari avtomatik qo'shiladi -->
-        <video id="videoPlayer" controls>
+        <!-- 
+           iPhone safari uchun maxsus parametrlar:
+           playsinline, webkit-playsinline - Video boshlanganda majburiy Fullscreenga o'tib ketmaydi, sayt ichida ko'rsatadi
+        -->
+        <video id="videoPlayer" controls playsinline webkit-playsinline preload="metadata">
             Sizning brauzeringiz video formatini qo'llab-quvvatlamaydi.
         </video>
     </div>
 
-    <!-- Qismlar tugmalari (JavaScript orqali to'ldiriladi) -->
+    <!-- Qismlar tugmalari -->
     <div class="playlist-container">
         <div class="playlist" id="playlist">
-            <!-- Tugmalar shu yerga tushadi -->
+            <!-- JS orqali to'ldiriladi -->
         </div>
     </div>
 
     <script>
-        const totalEpisodes = 81; // Jami qismlar soni
+        const totalEpisodes = 81;
         const videoPlayer = document.getElementById('videoPlayer');
         const currentTitle = document.getElementById('currentTitle');
         const playlist = document.getElementById('playlist');
         
         let currentIndex = 1;
 
-        // 81 ta tugmani avtomatik yaratish
         function buildPlaylist() {
             for (let i = 1; i <= totalEpisodes; i++) {
                 const btn = document.createElement('button');
@@ -140,51 +160,50 @@
                 btn.id = 'btn-' + i;
                 btn.innerText = i + '-Qism';
                 
-                // Tugma bosilganda qismni almashtirish
                 btn.onclick = () => playEpisode(i);
                 
                 playlist.appendChild(btn);
             }
         }
 
-        // Qismni ishga tushirish funksiyasi
         function playEpisode(index) {
             currentIndex = index;
             
-            // Havolani shakllantirish
-            const videoUrl = `https://c.uzbeklar.biz/film9/jumong/jumong%20${index}-qism%20hd%20%28uzmedia.tv%29.mp4`;
+            // Videoni almashtirish
+            videoPlayer.src = `https://c.uzbeklar.biz/film9/jumong/jumong%20${index}-qism%20hd%20%28uzmedia.tv%29.mp4`;
+            videoPlayer.play().catch(error => {
+                console.log("Avtoplay iPhone tomondan bloklandi. Iltimos, Play tugmasini bosing.");
+            });
             
-            // Videoni almashtirish va o'qitish
-            videoPlayer.src = videoUrl;
-            videoPlayer.play();
-            
-            // Sarlavhani o'zgartirish
             currentTitle.innerText = index + '-Qism';
 
-            // Barcha tugmalardan "active" klassini olib tashlash
+            // Aktiv tugmani yangilash
             document.querySelectorAll('.episode-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
 
-            // Tanlangan tugmaga "active" klassini qo'shish va unga skroll qilish
             const activeBtn = document.getElementById('btn-' + index);
             if (activeBtn) {
                 activeBtn.classList.add('active');
-                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                // Telefonlarda ro'yxatni silliq aylantirib, tanlangan tugmani ko'rsatish
+                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+            
+            // Telefon ekranida pleerga qarab tepaga silliq skroll qilish
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Bitta qism tugaganda avtomatik keyingisiga o'tish (Avtoplay)
+        // Keyingi qismga o'tish
         videoPlayer.addEventListener('ended', () => {
             if (currentIndex < totalEpisodes) {
                 playEpisode(currentIndex + 1);
             }
         });
 
-        // Dastlabki sozlamalar (Sahifa ochilganda ishlashi uchun)
+        // Boshlang'ich holat
         window.onload = () => {
             buildPlaylist();
-            // 1-qismni o'rnatamiz, lekin avtomatik o'qitmaymiz (brauzer qoidalarini buzmaslik uchun)
             videoPlayer.src = `https://c.uzbeklar.biz/film9/jumong/jumong%201-qism%20hd%20%28uzmedia.tv%29.mp4`;
             document.getElementById('btn-1').classList.add('active');
         };
